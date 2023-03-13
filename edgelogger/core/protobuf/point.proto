@@ -1,0 +1,23 @@
+syntax = "proto3";
+package proto;
+
+option java_package = "com.protobuf.generated";
+option java_outer_classname = "Point";
+option java_multiple_files = false;
+
+message DevicePoint{
+  string colletDeviceId=1 ;
+  string pointName = 2;
+  string value = 3;
+  int32 type= 4;
+  int64 oemTime = 5;
+  int32 quality = 6;
+  string attributes= 7;
+}
+
+message DevicePoints
+{
+	int64  timestamp = 1;
+    repeated DevicePoint points=2;
+    int32 eventFlag = 3;
+}

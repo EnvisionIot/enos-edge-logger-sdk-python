@@ -1,0 +1,3 @@
+include deps/install.sh
+include deps/pyzmq-hpu.tar.gz
+include deps/README.md
