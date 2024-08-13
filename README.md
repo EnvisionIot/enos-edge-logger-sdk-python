@@ -83,4 +83,5 @@ edge_sub_api.RegisterRequiredPoints(device_points, app_name)
 <a name="releasenotes"></a>
 
 ## Release Notes
-- 2022/11/30(0.1.0): first released python sdk.
+- 2022/11/30(1.0.0): first released python sdk.
+- 2023/10/09(): add GetAllDevicesNameAndModelIdPath and GetADeviceNameAndModelIdPath.

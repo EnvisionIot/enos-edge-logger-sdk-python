@@ -28,7 +28,7 @@ def testFunc():
 
     print(device_key_list)
 
-    device_key = "QCRhVhaBSF"
+    device_key = "uKCz5FfXOg"
     domain_name = "fjxychm_double_ai_10"
 
     # step3-0: Get the point's value, return str
@@ -78,7 +78,7 @@ def testFunc():
         print("failed to get model(%s) value in device(%s)" % (set_domain_name, device_key))
 
     # step5-0: Set A Cmd
-    cmd_domain_name = "2.3aifjchm"
+    cmd_domain_name = "AIMark11"
     ret = edge_api.SetAModelCmd(device_key, cmd_domain_name, "3", "1111111")
     if ret == 0:
         print("set a cmd success")
@@ -159,6 +159,45 @@ def testFunc():
     else:
         print("delete all app config failed")
 
+def SetAModelCmdTest():
+    app_name = "chm_test"
+    edge_api = EdgeAPI()
+    status = edge_api.RegisterRequiredPoints({"test":[]}, app_name)
+    print(status)
+    
+    device_key = "uKCz5FfXOg"
+    #cmd_domain_name = "AIMark11"
+    #ret = edge_api.SetAModelCmd(device_key, cmd_domain_name, "3", "1")
+    #if ret == 0:
+    #    print("set a cmd success")
+    #else:
+    #    print("failed to set a cmd")
+    #    
+    #cmd_domain_name = "AOMark1"
+    #ret = edge_api.SetAModelCmd(device_key, cmd_domain_name, "3", "2")
+    #if ret == 0:
+    #    print("set a cmd success")
+    #else:
+    #    print("failed to set a cmd")
+        
+    cmd_domain_name = "AIMark11"
+    ret = edge_api.SetAModelCmd(device_key, cmd_domain_name, "7", "2")
+    if ret == 0:
+        print("set a cmd success")
+    else:
+        print("failed to set a cmd")
+        
+
+def GetAllDevicesNameAndModelIdPathTest():
+    edge_api = EdgeAPI()
+    all_device_info = edge_api.GetAllDevicesNameAndModelIdPath()
+    print("get all device name and modelId")
+    print(all_device_info)
+
+    device_key = "logger_dev_1302"
+    device_info = edge_api.GetADeviceNameAndModelIdPath(device_key)
+    print("get deviceKey(%s) name and modelId(%s)" % (device_key, device_info))
+
 
 if __name__ == "__main__":
     app_name = "xfc_test"
@@ -174,5 +213,7 @@ if __name__ == "__main__":
     attr_vlaue = edge_api.GetAttributeValue(device_key, attribute)
     print(attr_vlaue)
 
-    testFunc()
+    SetAModelCmdTest()
+
+    # testFunc()
 

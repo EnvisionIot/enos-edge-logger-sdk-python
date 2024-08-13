@@ -201,13 +201,13 @@ class ControlCmd(object):
 class ControlCmdResult(object):
     """control command's result
     :serialId: the control command's unique serial id
-    :status: the control command's result, 0:success, other: failed
+    :status: the control command's result, 1:success, other: failed
     :desc: the reason description if control failed
     """
 
     def __init__(self) -> None:
         self.serialId = ""  # the command serial id
-        self.status = -1  # the control result, 0:success, other: failed
+        self.status = -1  # the control result, 1:success, other: failed
         self.desc = ""  # the description if control failed
 
     def isValid(self) -> bool:
@@ -224,20 +224,31 @@ class ControlCmdFormulaBitsMToN(object):
     :relatedPoint: Association Model Point Identifier in EnOS Cloud Model
     :relatedPointTimeout: Association model point collection timeout
     :lowBit: low bit
-    :highBit: hign bit
+    :highBit: high bit
+    :defaultPoint: defaultPoint value
+    :defaultPointLowBit: defaultPoint low bit
+    :defaultPointHighBit: defaultPoint high bit
+    :hasDefault: has defaultPoint 
     """
 
     def __init__(self) -> None:
 
         self.operandsSize = 0
         self.relatedPoint = ""
-        self.relatedPointTimeout = 0
+        self.relatedPointTimeout = 3600
         self.lowBit = 0
         self.highBit = 0
+        self.defaultPoint = 0
+        self.defaultPointLowBit = 0
+        self.defaultPointHighBit = 0
+        self.hasDefault = False
 
     def ParseOperands(self, operands: list) -> bool:
         self.operandsSize = len(operands)
-        if(self.operandsSize != 4):
+        if self.operandsSize < 4:
+            log.logger.error("the operands's size is not valid(%d)" % self.operandsSize)
+            return False
+        if self.operandsSize > 4 and self.operandsSize < 7:
             log.logger.error("the operands's size is not valid(%d)" % self.operandsSize)
             return False
 
@@ -264,9 +275,25 @@ class ControlCmdFormulaBitsMToN(object):
             return False
 
         self.highBit = int(operands[3])
-
-
-
+        
+        if self.operandsSize >= 7 and len(operands[4]) > 0 and len(operands[5]) > 0 and len(operands[6]) > 0:
+            self.hasDefault = True
+            if isinstance(operands[4],str) == False:
+                log.logger.error("the operands[4] is not valid")
+                return False
+            self.defaultPoint = int(operands[4])
+            
+            if isinstance(operands[5],str) == False:
+                log.logger.error("the operands[5] is not valid")
+                return False
+            self.defaultPointLowBit = int(operands[5])
+            
+            if isinstance(operands[6],str) == False:
+                log.logger.error("the operands[6] is not valid")
+                return False
+            self.defaultPointHighBit = int(operands[6])
+            
+            
     def isValid(self) -> bool:
         if not isinstance(self.operandsSize, int):
             log.logger.error("the operandsSize's value is not valid")
@@ -287,5 +314,31 @@ class ControlCmdFormulaBitsMToN(object):
         if not isinstance(self.highBit, int):
             log.logger.error("the highBit's value is not valid")
             return False
-
+        
+        if not isinstance(self.defaultPoint, int):
+            log.logger.error("the defaultPoint's value is not valid")
+            return False
+        
+        if not isinstance(self.defaultPointLowBit, int):
+            log.logger.error("the defaultPointLowBit's value is not valid")
+            return False
+        
+        if not isinstance(self.defaultPointHighBit, int):
+            log.logger.error("the defaultPointHighBit's value is not valid")
+            return False
+        
+        # check bit
+        if self.highBit < self.lowBit:
+            log.logger.error("the highBit and lowBit is not valid")
+            return False
+        
+        if self.hasDefault == True:
+            if self.defaultPointHighBit < self.defaultPointLowBit:
+                log.logger.error("the defaultPointHighBit and defaultPointLowBit is not valid")
+                return False
+            
+            #if self.lowBit <= self.defaultPointHighBit and self.highBit >= self.defaultPointLowBit:
+            #    log.logger.error("the bits intersect is not valid")
+            #    return False
+        
         return True

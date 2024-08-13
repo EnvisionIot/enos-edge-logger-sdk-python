@@ -19,7 +19,7 @@ class EdgeSubscribeAPI(EdgeAPI):
         zmq_address = "tcp://" + edge_logger_ip + ":5556"
         log.logger.debug("use the zmq address:%s" % zmq_address)
         self.zmq_api = ZmqSubDataAPI(zmq_address)
-        self.zmq_channel_prefix = "DATASVC.SUB.DPF_"
+        self.zmq_channel_prefix = "DATASVC.SUB_"
 
     def RegisterRequiredPoints(self, devices_points: Dict[str, str], app_name: str = "domainPointDefaulChannel") -> int:
         """Subscribe to the full set of required device point identifiers

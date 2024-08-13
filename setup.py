@@ -12,7 +12,7 @@ with open('README.md', 'r') as desc:
 
 setuptools.setup(
     name='edge-logger-sdk-python',
-    version='0.1.0',
+    version='1.0.1',
     author='Austen',
     author_email='',
     description='Edge Logger API for Python',
