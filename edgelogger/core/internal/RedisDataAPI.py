@@ -99,6 +99,8 @@ class ControlMapping(object):
                         return -1
 
                 self.mappingType = 3
+            elif mappingFx == "CONTROL_SET":
+                return 0
             else:
                 log.logger.error("mappingFxStr(%s) is not valid" % mappingFx)
                 return -1
@@ -639,7 +641,7 @@ class RedisDataAPI(object):
                 result, value = self.__CalcFormulaValue(
                     control_cmd.deviceKey, point_value, ctrl_mapping.formulaBitsMToNParam)
                 if result < 0:
-                    log.logger.error("control formula calculation failed")
+                    log.logger.error("failed to calc control formula")
                     return result
                 point_value = value
                 ctrl_mapping.valueType = "DOUBLE"
@@ -691,27 +693,36 @@ class RedisDataAPI(object):
             base_value = int((float)(model_value.domainValue))
             high_bit = param.highBit
             low_bit = param.lowBit
+            
+            output = self.__CalcBitMtoN(base_value, input_value, low_bit, high_bit)
+            if param.hasDefault:
+                output = self.__CalcBitMtoN(output, param.defaultPoint, param.defaultPointLowBit, param.defaultPointHighBit)
+                
+            return (0, output)
+    
         except Exception as e:
             log.logger.warning(
                 "failed to get param's value form 'CONTROL_BITS_M_TO_N' :%s(%s)" % (value, e))
             return (-6, "")
+       
+        
 
+
+    def __CalcBitMtoN(self, baseValue, inputValue, lowBit, highBit) -> int:
         log.logger.debug("relatedPointValue(%d),controlValueIn(%d),[%d,%d]" % (
-            base_value, input_value, param.lowBit, param.highBit))
+            baseValue, inputValue, lowBit, highBit))
 
-        value_tmp = (input_value & (
-            (2 << ((high_bit - low_bit + 1) - 1)) - 1)) << low_bit
-        base_value_tmp = base_value & ~(
-            ((2 << ((high_bit - low_bit + 1) - 1)) - 1) << low_bit)
+        value_tmp = (inputValue & (
+            (2 << ((highBit - lowBit + 1) - 1)) - 1)) << lowBit
+        base_value_tmp = baseValue & ~(
+            ((2 << ((highBit - lowBit + 1) - 1)) - 1) << lowBit)
         output = value_tmp | base_value_tmp
 
         log.logger.info("relatedPointValue(%d),controlValueIn(%d),[%d,%d],output=%d" % (
-            base_value, input_value, low_bit, high_bit, output))
+            baseValue, inputValue, lowBit, highBit, output))
 
-        return (0, output)
-
-
-
+        return output
+    
 
     def __ParseCmdResult(self, cmd_ret: str) -> ControlCmdResult:
 
@@ -824,6 +835,39 @@ class RedisDataAPI(object):
         except redis.RedisError as e:
             log.logger.error("failed to hget from key(%s) due to(%s)" % (redis_key_app, e))
             return None
+
+    def GetAllDevicesNameAndModelIdPath(self) -> Dict[str, str]:
+        """ Get all device name and modelIdPath
+        :return: Dict[str, str]:device_key-->json of name and model
+        """
+        redis_key_name = "conf:c2w.device.name"
+        try:
+            devicekey_to_name = self.__redis_conn.hgetall(redis_key_name)
+            if devicekey_to_name is None:
+                log.logger.warning("%s does not exist" % (redis_key_name))
+            return devicekey_to_name
+
+        except redis.RedisError as e:
+            log.logger.error("failed to run redis cmd(%s)" % e)
+            return None
+
+    def GetADeviceNameAndModelIdPath(self, device_key) -> str:
+        """ Get the device name and modelIdPath via device key
+        :return: json
+        """
+        redis_key_name = "conf:c2w.device.name"
+        try:
+            status = self.__redis_conn.hget(redis_key_name, device_key)
+            if status is None:
+                log.logger.warning("device(%s) does not exist in (%s)" % (device_key, redis_key_name))
+                return -1
+            else:
+                return status
+
+        except redis.RedisError as e:
+            log.logger.error("failed to run redis cmd(%s)" % e)
+            return None
+
 
 if __name__ == "__main__":
     def test_SetModelValue():

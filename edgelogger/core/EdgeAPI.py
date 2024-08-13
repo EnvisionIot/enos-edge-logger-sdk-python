@@ -477,3 +477,46 @@ class EdgeAPI(object):
             return None
 
         return 0
+
+    def GetAllDevicesNameAndModelIdPath(self) -> Dict[str, str]:
+        """ Get all device name and modelIdPath
+        :return: Dict[str, str]:device_key-->json of name and model
+        """
+
+        resource_status = self.redis_api.GetResourcePublishStatus()
+        if resource_status is None:
+            raise EdgeLoggerRedisException(RET_REDIS_ERROR.get_error_message(), RET_REDIS_ERROR.get_error_code())
+        if resource_status is False:
+            log.logger.warn("resource is not ready")
+            return -1
+
+        ret = self.redis_api.GetAllDevicesNameAndModelIdPath()
+        if ret is None:
+            raise EdgeLoggerRedisException(RET_REDIS_ERROR.get_error_message(), RET_REDIS_ERROR.get_error_code())
+
+        return ret
+
+    def GetADeviceNameAndModelIdPath(self, device_key: str) -> str:
+        """Get name and modelIdPath of a device, (modelIdPath uses / to represent the hierarchical relationship of inheritance)
+        :param device_key: the device key in EnOS Cloud Model
+        :return: the json of info
+        """
+        if isinstance(device_key, str) == False or len(device_key) == 0 or len(device_key) > REDIS_MAX_KEY_LENGTH:
+            log.logger.error("device_key's value is not valid")
+            raise EdgeLoggerException("device_key's value is not valid", RET_PARAM_IS_INVALID.get_error_code())
+
+        resource_status = self.redis_api.GetResourcePublishStatus()
+        if resource_status is None:
+            raise EdgeLoggerRedisException(RET_REDIS_ERROR.get_error_message(), RET_REDIS_ERROR.get_error_code())
+        if resource_status is False:
+            log.logger.warn("resource is not ready")
+            return -1
+
+        ret = self.redis_api.GetADeviceNameAndModelIdPath(device_key)
+        # not exist
+        if ret == -1:
+            raise EdgeLoggerException("failed to found device", RET_VALUE_IS_INVALID.get_error_code())        
+        if ret is None:
+            raise EdgeLoggerRedisException(RET_REDIS_ERROR.get_error_message(), RET_REDIS_ERROR.get_error_code())
+
+        return ret
